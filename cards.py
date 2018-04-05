@@ -11,8 +11,8 @@ class Card:
 class Land(Card):
     def __init__(self, name, types, subtypes, tapped_abilities ):
         super(Land, self).__init__()
-        self.types = types
-        self.subtypes = subtypes
+        self.types            = types
+        self.subtypes         = subtypes
         self.tapped_abilities = tapped_abilities        
     def play(self, owner, game):
         super(Land, self).play(owner, game)
@@ -25,21 +25,22 @@ class Land(Card):
 class Creature(Card):
     def __init__(self, name, subtypes, mc, power, toughness):
         super(Creature, self).__init__()
-        self.name = name
-        self.mc = {x: mc.get(x, 0) + self.mc.get(x, 0) for x in set(mc).union(self.mc)}
-        self.power = power
-        self.toughness = toughness
-        self.subtypes = subtypes        
+        self.name             = name
+        self.mc               = {x: mc.get(x, 0) + self.mc.get(x, 0) for x in set(mc).union(self.mc)}
+        self.base_power       = power
+        self.power            = power
+        self.base_toughness   = toughness        
+        self.toughness        = toughness
+        self.subtypes         = subtypes        
     def play(self, owner, game):
         super(Creature, self).play(owner, game)
-        print("Summoning a creature")
-        self.summoning_sick = True
-        self.damage_taken   = 0
-        self.damage_to_assign = 0
-        self.is_dead = False
-        self.is_attacking   = []
-        self.is_blocked_by  = []
-        self.is_blocking    = []
+        self.summoning_sick   = True
+        self.is_dead          = False
+        self.damage_taken     = 0
+        self.damage_to_assign = 0        
+        self.is_attacking     = []
+        self.is_blocked_by    = []
+        self.is_blocking      = []
         self.damage_assignment_order = []
         self.damage_assignment = []
     def take_damage(self, amount):
@@ -47,7 +48,7 @@ class Creature(Card):
         if self.damage_taken >= self.toughness:
             self.is_dead = True
     def deal_combat_damage_to_opponent(self, game):
-        game.players[abs(self.owner.index-1)].lose_life(self.power)
+        game.players[1-self.owner.index].lose_life(self.power)
     def set_damage_assignment_order(self, order):
         all_permutations = list(itertools.permutations(self.is_blocked_by))
         self.damage_assignment_order = list(all_permutations[order]) 

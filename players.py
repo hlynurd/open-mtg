@@ -4,14 +4,17 @@ import math
 
 class Player:
     def __init__(self, deck):
-        self.deck = deck
-        self.life = 20
-        self.hand = []
+        self.deck          = deck
+        self.life          = 20        
+        self.generic_debt  = 0
         self.can_play_land = False
-        self.has_lost = False
+        self.has_lost      = False                        
+        self.hand          = []
+        self.graveyard     = []
+        self.wins          = 0
+        self.has_attacked  = False
+        self.has_blocked   = False
         self.reset_mp()        
-        self.graveyard = []
-        self.generic_debt = 0
     def lose_life(self, amount):
         self.life -= amount
         if self.life < 1:
@@ -27,7 +30,7 @@ class Player:
         return True
     
     def get_opponent(self, game):
-        return game.players[abs(self.index-1)]
+        return game.players[1-self.index]
     
     def get_playable_cards(self):
         playable_indices = []

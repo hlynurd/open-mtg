@@ -45,14 +45,19 @@ def assign_random_damage_assignment_orders(player, attackers, game):
         random_order = random.randint(0, order)
         attacker.set_damage_assignment_order(random_order-1)                
 def assign_damage_randomly(player, attacker):
-    for i in range(len(attacker.is_blocked_by)):      
-        blocker_i = attacker.is_blocked_by[i]                        
+    for i in range(len(attacker.damage_assignment_order)):      
+        blocker_i = attacker.damage_assignment_order[i]
         remaining_health = blocker_i.toughness - blocker_i.damage_taken
-        if attacker.damage_to_assign < remaining_health or i == len(attacker.is_blocked_by)-1:
+        if attacker.damage_to_assign < remaining_health or i == len(attacker.damage_assignment_order)-1:
             attacker.assign_damage(i, attacker.damage_to_assign)
             break
         else:
             random_damage =  random.randint(remaining_health, attacker.damage_to_assign)
             attacker.assign_damage(i, random_damage)
             if attacker.damage_to_assign == 0:
-                break        
+                break    
+
+# delete these functions!
+
+
+        
