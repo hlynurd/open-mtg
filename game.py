@@ -38,16 +38,18 @@ class Game:
             else: # passing priority
                 self.player_with_priority = self.active_player.get_opponent(self)
         if self.phases[self.current_phase_index] == "Declare Attackers Step":
-            player.has_attacked = True
-            eligible_attackers = player.get_eligible_attackers(self)
+            attacking_player = self.active_player
+            attacking_player.has_attacked = True
+            eligible_attackers = attacking_player.get_eligible_attackers(self)
             xs = list(range(len(eligible_attackers)))
             powerset = list(chain.from_iterable(combinations(xs,n) for n in range(len(xs)+1)))
             element = powerset[move]
             chosen_attackers = [eligible_attackers[i] for i in element]
             self.attackers = chosen_attackers
         if self.phases[self.current_phase_index] == "Declare Blockers Step":
-            player.has_blocked = True
-            eligible_blockers = player.get_eligible_blockers(self)
+            blocking_player = self.nonactive_player
+            blocking_player.has_blocked = True
+            eligible_blockers = blocking_player.get_eligible_blockers(self)
             if len(eligible_blockers) is 0:
                 return -1
             all_blocking_assignments = list(range(np.power(len(self.attackers)+1, len(eligible_blockers))))            
@@ -105,16 +107,18 @@ class Game:
             _, ability_indices = player.get_activated_abilities(self)
             return list(range(len(playable_indices) + sum(ability_indices) + 1))
         if self.phases[self.current_phase_index] == "Declare Attackers Step":
-            if player.has_attacked:
+            attacking_player = self.active_player
+            if attacking_player.has_attacked:
                 return [-1]
             # next two lines get the power set of attackers
-            eligible_attackers = player.get_eligible_attackers(self)
+            eligible_attackers = attacking_player.get_eligible_attackers(self)
             xs = list(range(len(eligible_attackers)))            
             return list(range(len(list(chain.from_iterable(combinations(xs,n) for n in range(len(xs)+1))))))
         if self.phases[self.current_phase_index] == "Declare Blockers Step":
-            if player.has_blocked:
+            blocking_player = self.nonactive_player
+            if blocking_player.has_blocked:
                 return [-1]
-            eligible_blockers = player.get_eligible_blockers(self)
+            eligible_blockers = blocking_player.get_eligible_blockers(self)
             return list(range(np.power(len(self.attackers)+1, len(eligible_blockers))))
         if self.phases[self.current_phase_index] == "509.2": 
             for i in range(len(self.attackers)):
