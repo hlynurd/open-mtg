@@ -3,8 +3,6 @@ import numpy as np
 from players import *
 from itertools import chain, combinations
 
-# TODO: Throw away "active_player_index", better to just call "active_player.index"
-# TODO: throw away "abs(x-1)", "1-x" works as well to bitflip
 class Game:
     def __init__(self, player0, player1):
         self.players = [player0, player1]
@@ -14,6 +12,7 @@ class Game:
         self.attackers = []
         self.blockers = []
         self.battlefield = []
+        self.stack_is_empty = True
         self.phases = ["Main Phase", "Declare Attackers Step", "Declare Blockers Step", "509.2", "510.1c",
                        "Combat Damage Step", "Main Phase", "End Step"]
         self.current_phase_index = 0
@@ -22,21 +21,27 @@ class Game:
         self.blocker_counter = 0
         
     def make_move(self, player, move):
+        # TODO make the players pay up the generic mana cost debt if they have some!
+        if move is -1:
+            player.passed_priority = True
+            self.player_with_priority = self.active_player.get_opponent(self)
+            if self.players[0].passed_priority and self.players[1].passed_priority and self.stack_is_empty:
+                self.go_to_next_phase()
+            return True
         if self.phases[self.current_phase_index] == "Main Phase":
             playable_indices = player.get_playable_cards()
             callable_permanents, ability_indices = player.get_activated_abilities(self)
             number_of_legal_moves = len(playable_indices) + sum(ability_indices)        
             if move < len(playable_indices):
                 player.play_card(playable_indices[move], self)
-            elif move is not number_of_legal_moves:
+            else:
                 move -= len(playable_indices)
                 for i in range(len(ability_indices)):
                     if move > ability_indices[i]:
                         move -= ability_indices[i]
                     else:
                         callable_permanents[i].use_tapped_ability(move-1)        
-            else: # passing priority
-                self.player_with_priority = self.active_player.get_opponent(self)
+                
         if self.phases[self.current_phase_index] == "Declare Attackers Step":
             attacking_player = self.active_player
             attacking_player.has_attacked = True
@@ -84,31 +89,17 @@ class Game:
         remaining_health = blocker_i.toughness - blocker_i.damage_taken
         attacker.assign_damage(index, amount)
         return attacker.damage_to_assign > 0
-            
-    def go_to_next_phase(self):
-        self.current_phase_index += 1
-        self.player_with_priority = self.active_player
-        if self.current_phase_index == len(self.phases):
-            self.start_new_turn()
-        if self.phases[self.current_phase_index] == "Combat Damage Step" :
-            if self.apply_combat_damage():
-                print("player 0 life %i player 1 life %i" %(self.players[0].life, self.players[1].life))
-                self.check_state_based_actions()
-                if self.is_over():
-                    print("Game is over!")
-                    if self.players[0].has_lost: self.players[1].wins += 1
-                    else:               self.players[0].wins += 1
-                    print("player 0 wins: %i, player 1 wins: %i" % (self.players[0].wins, self.players[1].wins))
-            self.clean_up_after_combat()
-               
+
     def get_legal_moves(self, player):
         if self.phases[self.current_phase_index] == "Main Phase":
             playable_indices = player.get_playable_cards()
             _, ability_indices = player.get_activated_abilities(self)
-            return list(range(len(playable_indices) + sum(ability_indices) + 1))
+            non_passing_moves = list(range(len(playable_indices) + sum(ability_indices)))
+            non_passing_moves.append(-1)
+            return non_passing_moves # append the 'pass' move action and return
         if self.phases[self.current_phase_index] == "Declare Attackers Step":
             attacking_player = self.active_player
-            if attacking_player.has_attacked:
+            if attacking_player.has_attacked or player is not attacking_player:
                 return [-1]
             # next two lines get the power set of attackers
             eligible_attackers = attacking_player.get_eligible_attackers(self)
@@ -116,7 +107,7 @@ class Game:
             return list(range(len(list(chain.from_iterable(combinations(xs,n) for n in range(len(xs)+1))))))
         if self.phases[self.current_phase_index] == "Declare Blockers Step":
             blocking_player = self.nonactive_player
-            if blocking_player.has_blocked:
+            if blocking_player.has_blocked or player is not blocking_player:
                 return [-1]
             eligible_blockers = blocking_player.get_eligible_blockers(self)
             return list(range(np.power(len(self.attackers)+1, len(eligible_blockers))))
@@ -147,23 +138,22 @@ class Game:
             return list(range(remaining_health, attacker.damage_to_assign+1))
         
             
-    def start_game(self):
-        self.active_player_index = random.randint(0, len(self.players)-1)                
-        print("player %i goes first" % (self.active_player_index))
-        self.nonactive_player = self.players[1-self.active_player_index]
-        self.active_player = self.players[self.active_player_index]
+    def start_game(self):        
+        self.active_player = self.players[random.randint(0, len(self.players)-1)]
+        self.nonactive_player = self.players[1-self.active_player.index]
+        print("player %i goes first" % (self.active_player.index))
         self.player_with_priority = self.active_player
+        self.active_player.passed_priority = False
         self.active_player.can_play_land = True
         for i in range(len(self.players)):
-            self.players[i].shuffle_deck()
+            #self.players[i].shuffle_deck()
             for j in range(self.starting_hand_size):
                 self.players[i].draw_card()     
     def start_new_turn(self):
         self.current_phase_index = 0
-        self.active_player_index = (self.active_player_index + 1) % len(self.players)        
-        self.active_player = self.players[self.active_player_index]        
+        self.active_player = self.players[1-self.active_player.index]        
         self.player_with_priority = self.active_player
-        self.nonactive_player = self.players[1-self.active_player_index]
+        self.nonactive_player = self.players[1-self.active_player.index]
         self.active_player.draw_card()
         self.active_player.can_play_land = True
         for permanent in self.battlefield:
@@ -175,6 +165,30 @@ class Game:
             self.players[i].reset_mp() 
             self.players[i].has_attacked = False 
             self.players[i].has_blocked = False
+        
+            
+    def go_to_next_phase(self):
+        self.current_phase_index += 1
+        
+        if self.current_phase_index == len(self.phases):
+            self.start_new_turn()
+            return True
+        if self.phases[self.current_phase_index] == "Combat Damage Step" :
+            if self.apply_combat_damage():
+                self.check_state_based_actions()
+                if self.is_over():
+                    if self.players[0].has_lost: self.players[1].wins += 1
+                    else:               self.players[0].wins += 1
+            self.clean_up_after_combat()
+        if self.phases[self.current_phase_index] == "Declare Blockers Step":
+            self.nonactive_player.has_passed = False
+            self.active_player.has_passed = True
+            self.player_with_priority = self.nonactive_player
+        else:
+            self.nonactive_player.has_passed = True
+            self.active_player.has_passed = False
+            self.player_with_priority = self.active_player
+               
     def is_over(self):        
         for i in range(len(self.players)):
             if self.players[i].has_lost:
