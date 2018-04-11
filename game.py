@@ -1,7 +1,9 @@
+# XXX: Mana debt is still hanging around!
 import random as random
 import numpy as np
 from players import *
 from itertools import chain, combinations
+import copy
 
 class Game:
     def __init__(self, player0, player1):
@@ -13,6 +15,7 @@ class Game:
         self.blockers = []
         self.battlefield = []
         self.stack_is_empty = True
+        #self.player_just_moved = {}
         self.phases = ["Main Phase", "Declare Attackers Step", "Declare Blockers Step", "509.2", "510.1c",
                        "Combat Damage Step", "Main Phase", "End Step"]
         self.current_phase_index = 0
@@ -20,7 +23,26 @@ class Game:
         self.attacker_counter = 0
         self.blocker_counter = 0
         
-    def make_move(self, player, move):
+    def get_moves(self):
+        player = self.player_with_priority
+        return self.get_legal_moves(player)
+    
+    def get_results(self, player_index):
+        #print("current player index: %i" % (player.index))
+        player = self.players[player_index]
+        opponent = self.players[1-player.index]
+        assert self.is_over()
+        if player.has_lost and opponent.has_lost:
+            return 0.5
+        if player.has_lost:
+            return 0.0
+        if opponent.has_lost:
+            return 1.0
+            
+    
+    def make_move(self, move):
+        player = self.player_with_priority
+        self.player_just_moved = player
         # TODO make the players pay up the generic mana cost debt if they have some!
         if move is -1:
             player.passed_priority = True
@@ -91,6 +113,8 @@ class Game:
         return attacker.damage_to_assign > 0
 
     def get_legal_moves(self, player):
+        if self.is_over():
+            return []
         if self.phases[self.current_phase_index] == "Main Phase":
             playable_indices = player.get_playable_cards()
             _, ability_indices = player.get_activated_abilities(self)
@@ -142,6 +166,7 @@ class Game:
         self.active_player = self.players[random.randint(0, len(self.players)-1)]
         self.nonactive_player = self.players[1-self.active_player.index]
         print("player %i goes first" % (self.active_player.index))
+        self.player_just_moved = self.active_player
         self.player_with_priority = self.active_player
         self.active_player.passed_priority = False
         self.active_player.can_play_land = True

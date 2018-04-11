@@ -3,7 +3,7 @@ import random as random
 from cards import *
 import math
 import copy
-
+import minimax
 class Player:
     def __init__(self, deck):
         self.deck          = deck
@@ -32,66 +32,13 @@ class Player:
             move_values = [-9999] * len(legal_moves)
             for i in range(len(move_values)):
                 new_game = copy.deepcopy(game)
-                new_game.make_move(new_game.players[self.index], legal_moves[i])
-                move_values[i] = self.alphabeta(new_game, 5, -9999, 9999, new_game.player_with_priority.index is not self.index)
-            print(move_values)
+                new_game.make_move(legal_moves[i])
+                move_values[i] = minimax.alphabeta(self, new_game, 1, -9999, 9999, new_game.player_with_priority.index is not self.index)
             
             winner = np.argwhere(move_values == np.amax(move_values))
             winner.flatten().tolist()
             arg = random.choice(winner)[0]
             return legal_moves[arg]
-        
-    # from wikipedia
-    # this functions needs to be examined carefully, as the assumption from wikipedia does not hold: the players are not necessarily alternating their moves
-    def alphabeta(self, new_game, depth, alpha, beta, maximizing_player):
-        if depth == 0 or new_game.is_over():
-            return new_game.players[self.index].heuristic_value(new_game)
-        if maximizing_player:
-            v = -9999
-            for new_move in new_game.get_legal_moves(new_game.players[self.index]):
-                another_new_game = copy.deepcopy(new_game)
-                another_new_game.make_move(another_new_game.players[self.index], new_move)
-                v = max(v, self.alphabeta(another_new_game, depth-1, alpha, beta, another_new_game.player_with_priority.index is not self.index))
-                alpha = max(alpha, v)
-                if beta <= alpha:
-                    break
-            return v
-        else:
-            v = 9999
-            for new_move in new_game.get_legal_moves(new_game.players[1-self.index]):
-                another_new_game = copy.deepcopy(new_game)
-                another_new_game.make_move(another_new_game.players[1-self.index], new_move)
-                v = min(v, self.alphabeta(another_new_game, depth-1, alpha, beta, another_new_game.player_with_priority.index is self.index))
-                beta = min(beta, v)
-                if beta <= alpha:
-                    break
-            return v
-                        
-                        
-            
-    def heuristic_value(self, game):
-        if self.get_opponent(game).has_lost:
-            return 9999
-        if self.has_lost:
-            return -9999
-        enemy_bear_amount = 0
-        own_bear_amount = 0
-        own_power = 0
-        enemy_power = 0
-        own_toughness = 0
-        enemy_toughness = 0
-        for permanent in game.battlefield:
-            if isinstance(permanent, Creature):
-                if permanent.owner.index is self.index:
-                    own_power += permanent.power
-                    own_toughness += permanent.toughness
-                    own_bear_amount += 1
-                else:
-                    enemy_power += permanent.power
-                    enemy_toughness += permanent.toughness
-                    enemy_bear_amount += 1
-        value = (own_bear_amount - enemy_bear_amount) + (self.life - self.get_opponent(game).life) + (own_power - enemy_power) + (own_toughness - enemy_toughness)
-        return value
                     
     def can_afford_card(self, card):
         for key in self.mp:

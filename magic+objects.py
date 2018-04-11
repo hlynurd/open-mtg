@@ -5,6 +5,7 @@
 
 import numpy as np
 import random
+import mcts
 from cards import *
 from players import *
 from game import *    
@@ -25,12 +26,19 @@ for i in range(10):
         if game.player_with_priority.index is 0:
             move = game.player_with_priority.determine_move(method="random", game=game)
         else:
-#            if game.phases[game.current_phase_index] == "Declare Attackers Step":
-            move = game.player_with_priority.determine_move(method="alphabeta", game=game)
-#            else:
-#                move = game.player_with_priority.determine_move(method="random", game=game)
-        game.make_move(game.player_with_priority, move)    
-        #print("heuristic value: %i" %(game.players[1].heuristic_value(game)))
+            if True: #game.phases[game.current_phase_index] == "Declare Attackers Step":
+                move = game.player_with_priority.determine_move(method="alphabeta", game=game)
+#                if len(game.get_moves()) == 1:
+#                    move = game.get_moves()[0]
+#                else:
+#                    move = mcts.uct(game, itermax = 100)
+#                move = mcts.uct(game, itermax = 100)
+            else:
+                move = game.player_with_priority.determine_move(method="random", game=game)
+        game.make_move(move)    
+#        print("move: %i, current player's life: %i" % (move, game.player_with_priority.life))
+    for j in range(2):
+        print(game.get_legal_moves(game.players[j]))
     player_0_wins += game.players[0].wins
     player_1_wins += game.players[1].wins
     print("game is over! current standings: %i - %i" % (player_0_wins, player_1_wins))
