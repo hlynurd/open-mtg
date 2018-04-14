@@ -58,14 +58,8 @@ class Creature(Card):
         self.base_toughness = toughness
         self.toughness = toughness
         self.subtypes = subtypes
-        # Consider adding a functional creature card instantiation argument that sets text automatically
-        self.cannot_block = cannot_block
-
-    def play(self, owner, game):
-        super(Creature, self).play(owner, game)
-        game.battlefield.append(self)
-        self.summoning_sick = True
         self.is_dead = False
+        self.summoning_sick = True
         self.damage_taken = 0
         self.damage_to_assign = 0
         self.is_attacking = []
@@ -73,6 +67,12 @@ class Creature(Card):
         self.is_blocking = []
         self.damage_assignment_order = []
         self.damage_assignment = []
+        # Consider adding a functional creature card instantiation argument that sets text automatically
+        self.cannot_block = cannot_block
+
+    def play(self, owner, game):
+        super(Creature, self).play(owner, game)
+        game.battlefield.append(self)
 
     def take_damage(self, amount):
         self.damage_taken += amount
@@ -82,7 +82,6 @@ class Creature(Card):
     def deal_combat_damage_to_opponent(self, game):
         game.players[1 - self.owner.index].lose_life(self.power)
 
-    # TODO: Power scrup this function after the bugs disappear
     def set_damage_assignment_order(self, order):
         all_permutations = list(itertools.permutations(self.is_blocked_by))
         self.damage_assignment_order = list(all_permutations[order])

@@ -1,4 +1,3 @@
-# XXX: Mana debt is still hanging around!
 from itertools import chain, combinations
 import math
 from players import *
@@ -16,6 +15,10 @@ class Game:
         self.stack_is_empty = True
         self.temporary_zone = []
         self.damage_targets = []
+        self.active_player = self.players[random.randint(0, len(self.players) - 1)]
+        self.nonactive_player = self.players[1 - self.active_player.index]
+        self.player_just_moved = self.active_player
+        self.player_with_priority = self.active_player
         # self.player_just_moved = {}
         self.phases = ["Main Phase", "Declare Attackers Step", "Declare Blockers Step", "509.2", "510.1c",
                        "Combat Damage Step", "Main Phase", "End Step"]
@@ -53,8 +56,6 @@ class Game:
                 player.generic_debt -= 1
             return True
         if player.casting_spell != "":
-            # print("player should cast spell: %s " % (player.casting_spell))
-            # print(move)
             if player.casting_spell == "Vengeance":
                 dead_creature = self.battlefield[move]
                 self.battlefield.remove(dead_creature)
@@ -102,7 +103,6 @@ class Game:
         if self.phases[self.current_phase_index] == "Main Phase":
             playable_indices = player.get_playable_cards(self)
             callable_permanents, ability_indices = player.get_activated_abilities(self)
-            number_of_legal_moves = len(playable_indices) + sum(ability_indices)
             if move < len(playable_indices):
                 player.play_card(playable_indices[move], self)
             else:
@@ -139,30 +139,25 @@ class Game:
                     self.attackers[blocking_assignments[i]].is_blocked_by.append(eligible_blockers[i])
                     eligible_blockers[i].is_blocking.append(self.attackers[blocking_assignments[i]])
                     self.blockers.append(eligible_blockers[i])
-        if self.phases[
-            self.current_phase_index] == "509.2":  # for each attacking creature that’s become blocked, the active player announces that creature’s damage assignment order
+        # for each attacker that’s become blocked, the active player announces the damage assignment order
+        if self.phases[self.current_phase_index] == "509.2":
             for i in range(len(self.attackers)):
                 if len(self.attackers[i].is_blocked_by) is not 0:
                     if len(self.attackers[i].damage_assignment_order) is 0:
                         self.attackers[i].set_damage_assignment_order(move)
                         return 1
             return -1
-        if self.phases[
-            self.current_phase_index] == "510.1c":  # A blocked creature assigns its combat damage to the creatures blocking it
-            all_done = False
+        # A blocked creature assigns its combat damage to the creatures blocking it
+        if self.phases[self.current_phase_index] == "510.1c":
             self.assign_damage_deterministically(player,
                                                  self.attackers[self.attacker_counter], self.blocker_counter, move)
             self.blocker_counter += 1
             if self.blocker_counter >= len(self.attackers[self.attacker_counter].is_blocked_by):
                 self.blocker_counter = 0
                 self.attacker_counter += 1
-            if self.attacker_counter >= len(self.attackers):
-                all_done = True
             # return all_done
 
     def assign_damage_deterministically(self, player, attacker, index, amount):
-        blocker_i = attacker.damage_assignment_order[index]
-        remaining_health = blocker_i.toughness - blocker_i.damage_taken
         attacker.assign_damage(index, amount)
         return attacker.damage_to_assign > 0
 
@@ -238,15 +233,15 @@ class Game:
                 return [-1]
             eligible_blockers = blocking_player.get_eligible_blockers(self)
             return list(range(np.power(len(self.attackers) + 1, len(eligible_blockers))))
-        if self.phases[
-            self.current_phase_index] == "509.2":  # for each attacking creature that’s become blocked, the active player announces that creature’s damage assignment order
+        # for each attacker that’s become blocked, the active player announces the damage assignment order
+        if self.phases[self.current_phase_index] == "509.2":
             for i in range(len(self.attackers)):
                 if len(self.attackers[i].is_blocked_by) is not 0:
                     if len(self.attackers[i].damage_assignment_order) is 0:
                         return list(range(math.factorial(len(self.attackers[i].is_blocked_by))))
             return [-1]
-        if self.phases[
-            self.current_phase_index] == "510.1c":  # A blocked creature assigns its combat damage to the creatures blocking it
+
+        if self.phases[self.current_phase_index] == "510.1c":
             if len(self.attackers) is 0 or self.attacker_counter >= len(self.attackers):
                 return [-1]
             return self.get_possible_damage_assignments(player, self.attackers[self.attacker_counter],
@@ -256,7 +251,8 @@ class Game:
         if self.phases[self.current_phase_index] == "End Step":
             return [-1]
 
-    def get_possible_damage_assignments(self, player, attacker, index):
+    @staticmethod
+    def get_possible_damage_assignments(player, attacker, index):
         if len(attacker.damage_assignment_order) is 0:
             return [-1]
         blocker_i = attacker.damage_assignment_order[index]
@@ -267,11 +263,6 @@ class Game:
             return list(range(remaining_health, attacker.damage_to_assign + 1))
 
     def start_game(self):
-        self.active_player = self.players[random.randint(0, len(self.players) - 1)]
-        self.nonactive_player = self.players[1 - self.active_player.index]
-        print("player %i goes first" % (self.active_player.index))
-        self.player_just_moved = self.active_player
-        self.player_with_priority = self.active_player
         self.active_player.passed_priority = False
         self.active_player.can_play_land = True
         for i in range(len(self.players)):

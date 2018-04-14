@@ -2,13 +2,14 @@ import copy
 import random as random
 
 import numpy as np
-import math
+
 import minimax
 from cards import *
 
 
 class Player:
     def __init__(self, deck):
+        self.index = None
         self.deck = deck
         self.life = 20
         self.generic_debt = 0
@@ -20,7 +21,7 @@ class Player:
         self.has_blocked = False
         self.passed_priority = True
         self.casting_spell = ""
-        self.reset_mp()
+        self.mp = {'White': 0, 'Blue': 0, 'Black': 0, 'Red': 0, 'Green': 0, 'Colorless': 0}
 
     def get_mp_as_list(self):
         mp_list = []

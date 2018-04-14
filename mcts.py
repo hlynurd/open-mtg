@@ -33,7 +33,8 @@ class Node:
         return n
 
     def update(self, result):
-        """ Update this node - one additional visit and result additional wins. result must be from the viewpoint of playerJustmoved.
+        """ Update this node - one additional visit and result additional wins.
+        result must be from the viewpoint of playerJustmoved.
         """
         self.visits += 1
         self.wins += result
@@ -62,13 +63,8 @@ def uct(rootstate, itermax, verbose=False):
         # print("mcts print: %s" % (state.players))
 
         if len(state.players[k].deck) > 0:
-            try:
-                while len(state.players[k].deck) > 0 and state.players[k].deck[-1].deck_location_known:
-                    indexed_cards_in_deck.append(state.players[k].deck.pop())
-            except:
-                print(state.players[k])
-                print(state.players[k].deck)
-                assert False
+            while len(state.players[k].deck) > 0 and state.players[k].deck[-1].deck_location_known:
+                indexed_cards_in_deck.append(state.players[k].deck.pop())
         for indexed_card in indexed_cards_in_deck:
             state.players[k].deck.append(indexed_card)
         # and "imagine" a scenario for the opponent - this assumes knowledge of opponent decklist!
@@ -85,8 +81,6 @@ def uct(rootstate, itermax, verbose=False):
         for j in range(opponent_hand_size):
             opponent.draw_card()
 
-        # state = rootstate.Clone()
-
         # Select
         while node.untried_moves == [] and node.child_nodes != []:  # node is fully expanded and non-terminal
             node = node.uct_select_child()
@@ -99,12 +93,12 @@ def uct(rootstate, itermax, verbose=False):
             node = node.add_child(m, state)  # add child and descend tree
 
         # Rollout - this can often be made orders of magnitude quicker using a state.GetRandomMove() function
-        while state.get_moves() != []:  # while state is non-terminal
+        while not state.get_moves() == []:  # while state is non-terminal
             state.make_move(random.choice(state.get_moves()))
 
         # Backpropagate
-        while node != None:  # backpropagate from the expanded node and work back to the root node
-            node.update(state.get_results(
-                node.player_just_moved.index))  # state is terminal. Update node with result from POV of node.playerJustMoved
+        while node is not None:  # backpropagate from the expanded node and work back to the root node
+            # state terminal. Update node with result from POV of node.playerJustMoved
+            node.update(state.get_results(node.player_just_moved.index))
             node = node.parent
     return sorted(rootnode.child_nodes, key=lambda c: c.visits)[-1].move  # return the move that was most visited

@@ -25,7 +25,7 @@ for i in range(20):
             if len(game.get_moves()) == 1:
                 move = game.get_moves()[0]
             else:
-                move = mcts.uct(game, itermax=40)
+                move = mcts.uct(game, itermax=25)
         game.make_move(move)
     if game.players[1].has_lost:
         player_0_wins += 1
