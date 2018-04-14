@@ -87,14 +87,12 @@ class Game:
             if player.casting_spell == "Volcanic Hammer":
                 self.update_damage_targets()
                 self.damage_targets[move].take_damage(3)
+            if player.casting_spell == "Sacred Nectar":
+                player.life += 4
             player.casting_spell = ""
             return True
 
-        # temp debugging:
-        assert isinstance(move, int)
-
-        # XXX: Rename -1 to "pass" in all files
-        if move is -1:
+        if move is "Pass":
             player.passed_priority = True
             self.player_with_priority = self.active_player.get_opponent(self)
             if self.players[0].passed_priority and self.players[1].passed_priority and self.stack_is_empty:
@@ -205,6 +203,8 @@ class Game:
             if player.casting_spell == "Volcanic Hammer":
                 self.update_damage_targets()
                 return list(range(len(self.damage_targets)))
+            if player.casting_spell == "Sacred Nectar":
+                return ["Resolve Spell"]
             if player.casting_spell == "Rampant Growth":
                 choices = ["Refuse"]
                 basic_land_types = ["Plains", "Island", "Swamp", "Mountain", "Forest"]
@@ -212,17 +212,17 @@ class Game:
                     if player.find_land_in_library(land_type) >= 0:
                         choices.append(land_type)
                 return choices
-            return [-1]
+            return ["Pass"]
         if self.phases[self.current_phase_index] == "Main Phase":
             playable_indices = player.get_playable_cards(self)
             _, ability_indices = player.get_activated_abilities(self)
             non_passing_moves = list(range(len(playable_indices) + sum(ability_indices)))
-            non_passing_moves.append(-1)
+            non_passing_moves.append("Pass")
             return non_passing_moves  # append the 'pass' move action and return
         if self.phases[self.current_phase_index] == "Declare Attackers Step":
             attacking_player = self.active_player
             if attacking_player.has_attacked or player is not attacking_player:
-                return [-1]
+                return ["Pass"]
             # next two lines get the power set of attackers
             eligible_attackers = attacking_player.get_eligible_attackers(self)
             xs = list(range(len(eligible_attackers)))
@@ -230,7 +230,7 @@ class Game:
         if self.phases[self.current_phase_index] == "Declare Blockers Step":
             blocking_player = self.nonactive_player
             if blocking_player.has_blocked or player is not blocking_player:
-                return [-1]
+                return ["Pass"]
             eligible_blockers = blocking_player.get_eligible_blockers(self)
             return list(range(np.power(len(self.attackers) + 1, len(eligible_blockers))))
         # for each attacker that’s become blocked, the active player announces the damage assignment order
@@ -239,22 +239,22 @@ class Game:
                 if len(self.attackers[i].is_blocked_by) is not 0:
                     if len(self.attackers[i].damage_assignment_order) is 0:
                         return list(range(math.factorial(len(self.attackers[i].is_blocked_by))))
-            return [-1]
+            return ["Pass"]
 
         if self.phases[self.current_phase_index] == "510.1c":
             if len(self.attackers) is 0 or self.attacker_counter >= len(self.attackers):
-                return [-1]
+                return ["Pass"]
             return self.get_possible_damage_assignments(player, self.attackers[self.attacker_counter],
                                                         self.blocker_counter)
         if self.phases[self.current_phase_index] == "Combat Damage Step":
-            return [-1]
+            return ["Pass"]
         if self.phases[self.current_phase_index] == "End Step":
-            return [-1]
+            return ["Pass"]
 
     @staticmethod
     def get_possible_damage_assignments(player, attacker, index):
         if len(attacker.damage_assignment_order) is 0:
-            return [-1]
+            return ["Pass"]
         blocker_i = attacker.damage_assignment_order[index]
         remaining_health = blocker_i.toughness - blocker_i.damage_taken
         if attacker.damage_to_assign < remaining_health or index == len(attacker.damage_assignment_order) - 1:

@@ -41,11 +41,7 @@ class Sorcery(Card):
 
     def play(self, owner, game):
         super(Sorcery, self).play(owner, game)
-        # XXX: Handle this elsewhere!
-        if self.name == "Sacred Nectar":
-            owner.life += 4
-        else:
-            owner.casting_spell = self.name
+        owner.casting_spell = self.name
 
 
 class Creature(Card):

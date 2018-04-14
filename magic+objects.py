@@ -1,17 +1,8 @@
 # coding: utf-8
-
-# In[1]:
-
 import mcts
 from decklists import *
 from game import *
 
-# In[2]:
-
-# todo: handle generic mana debt
-# todo: implement 7th or 8th ed starter 2 player decks
-# todo: clean up and sexify code
-# %%capture
 player_0_wins = 0
 player_1_wins = 0
 for i in range(20):
