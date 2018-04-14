@@ -47,10 +47,15 @@ class Game:
             return 1.0
             
     
-    def make_move(self, move):
+    def make_move(self, move, verbose=False):
         player = self.player_with_priority
         self.player_just_moved = player
         # TODO make the players pay up the generic mana cost debt if they have some!
+        if player.generic_debt > 0:
+            for mana in move:
+                player.mp[mana] -= 1
+                player.generic_debt -= 1
+            return True
         if player.casting_spell != "":
             #print("player should cast spell: %s " % (player.casting_spell))
             #print(move)
@@ -137,14 +142,14 @@ class Game:
                     self.attackers[blocking_assignments[i]].is_blocked_by.append(eligible_blockers[i])
                     eligible_blockers[i].is_blocking.append(self.attackers[blocking_assignments[i]])
                     self.blockers.append(eligible_blockers[i])            
-        if self.phases[self.current_phase_index] == "509.2": 
+        if self.phases[self.current_phase_index] == "509.2":  # for each attacking creature that’s become blocked, the active player announces that creature’s damage assignment order
             for i in range(len(self.attackers)):
                 if len(self.attackers[i].is_blocked_by) is not 0:
                     if len(self.attackers[i].damage_assignment_order) is 0:
                         self.attackers[i].set_damage_assignment_order(move)
                         return 1
             return -1
-        if self.phases[self.current_phase_index] == "510.1c": 
+        if self.phases[self.current_phase_index] == "510.1c": # A blocked creature assigns its combat damage to the creatures blocking it
             all_done = False
             self.assign_damage_deterministically(player,
                                                 self.attackers[self.attacker_counter], self.blocker_counter, move)
@@ -191,6 +196,9 @@ class Game:
     def get_legal_moves(self, player):
         if self.is_over():
             return []
+        if player.generic_debt > 0:
+            mp_as_list = player.get_mp_as_list()
+            return list(itertools.combinations(mp_as_list, player.generic_debt))
         if player.casting_spell != "":
             #print("Returning a spell move now")
             if player.casting_spell == "Vengeance":
@@ -232,13 +240,13 @@ class Game:
                 return [-1]
             eligible_blockers = blocking_player.get_eligible_blockers(self)
             return list(range(np.power(len(self.attackers)+1, len(eligible_blockers))))
-        if self.phases[self.current_phase_index] == "509.2": 
+        if self.phases[self.current_phase_index] == "509.2": # for each attacking creature that’s become blocked, the active player announces that creature’s damage assignment order
             for i in range(len(self.attackers)):
                 if len(self.attackers[i].is_blocked_by) is not 0:
                     if len(self.attackers[i].damage_assignment_order) is 0:
                         return list(range(math.factorial(len(self.attackers[i].is_blocked_by))))
             return [-1]
-        if self.phases[self.current_phase_index] == "510.1c": 
+        if self.phases[self.current_phase_index] == "510.1c": # A blocked creature assigns its combat damage to the creatures blocking it
             if len(self.attackers) is 0 or self.attacker_counter >= len(self.attackers):
                 return [-1]
             return self.get_possible_damage_assignments(player, self.attackers[self.attacker_counter], self.blocker_counter)        
@@ -307,7 +315,7 @@ class Game:
             self.active_player.has_passed = False
             self.player_with_priority = self.active_player
                
-    def is_over(self):        
+    def is_over(self):
         for i in range(len(self.players)):
             if self.players[i].has_lost:
                 return True

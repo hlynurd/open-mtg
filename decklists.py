@@ -47,11 +47,11 @@ def get_8ed_core_silver_deck():
         decklist.append(Creature("Giant Octopus", "Octopus", {'Blue': 1, 'Generic' : 3}, 3, 3))
     for i in range(2):
         decklist.append(Creature("Coral Eel", "Eel", {'Blue': 1, 'Generic' : 1}, 2, 1))
-        decklist.append(Creature("Vizzerdrix", "Beast", {'Blue': 1, 'Generic' : 7}, 6, 6))
-        #decklist.append(Sorcery("Sacred Nectar", "", {'White': 1, 'Generic' : 1}))
-        #decklist.append(Sorcery("Vengeance", "", {'White': 1, 'Generic' : 1}))
+        decklist.append(Creature("Vizzerdrix", "Beast", {'Blue': 1, 'Generic' : 6}, 6, 6))
+        decklist.append(Sorcery("Sacred Nectar", "", {'White': 1, 'Generic' : 1}))
+        decklist.append(Sorcery("Vengeance", "", {'White': 1, 'Generic' : 1}))
     for i in range(1):
         decklist.append(Creature("Eager Cadet", "Human Soldier", {'White': 1, 'Generic' : 0}, 1, 1))
         decklist.append(Creature("Fugitive Wizard", "Human Wizard", {'Blue': 1, 'Generic' : 0}, 1, 1))
-        #decklist.append(Sorcery("Index", "", {'Blue': 1, 'Generic' : 0}))
+        decklist.append(Sorcery("Index", "", {'Blue': 1, 'Generic' : 0}))
     return decklist

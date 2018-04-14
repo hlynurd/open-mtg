@@ -19,7 +19,12 @@ class Player:
         self.casting_spell = ""
         self.reset_mp()       
         
-        
+    def get_mp_as_list(self):
+        mp_list = []
+        for key in self.mp:
+            for i in range(self.mp[key]):
+                mp_list.append(key)
+        return mp_list
         
     def take_damage(self, amount):
         self.lose_life(amount)
