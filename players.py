@@ -13,11 +13,17 @@ class Player:
         self.has_lost      = False                        
         self.hand          = []
         self.graveyard     = []
-        self.wins          = 0
         self.has_attacked  = False
         self.has_blocked   = False
         self.passed_priority = True
-        self.reset_mp()        
+        self.casting_spell = ""
+        self.reset_mp()       
+        
+        
+        
+    def take_damage(self, amount):
+        self.lose_life(amount)
+        
     def lose_life(self, amount):
         self.life -= amount
         if self.life < 1:
@@ -49,19 +55,50 @@ class Player:
                     return False
         return True
     
+    def has_legal_targets(self, card, game):
+        if card.name == "Vengeance" and len(game.get_tapped_creature_indices()) == 0:
+            return False
+        if card.name == "Stone Rain" and len(game.get_land_indices()) == 0:
+            return False
+        return True
+    
     def get_opponent(self, game):
         return game.players[1-self.index]
     
-    def get_playable_cards(self):
+    def get_playable_cards(self, game):
         playable_indices = []
         for i, card in enumerate(self.hand):
+            #print(card.name)
+            
             if isinstance(card, Land):
                 if self.can_play_land:
                     playable_indices.append(i)
-            else:
+            elif isinstance(card, Creature):
                 if self.can_afford_card(card):
                     playable_indices.append(i)
+            elif isinstance(card, Sorcery):
+                if self.can_afford_card(card) and self.has_legal_targets(card, game):
+                    playable_indices.append(i)
+            else:
+                assert False
         return playable_indices
+    
+    def find_land_in_library(self, land_type):
+        for i in range(len(self.deck)):
+            if isinstance(self.deck[i], Land):
+                 if land_type in self.deck[i].subtypes:
+                        return i
+        return -1
+
+        
+    
+    def get_library_land_indices(self):
+        land_indices = []
+        for i in range(len(self.deck)):
+            if isinstance(self.deck[i], Land):
+                land_indices.append(i)
+        return land_indices
+    
     def reset_mp(self):
         self.mp = {'White' : 0, 'Blue' : 0, 'Black' : 0, 'Red' : 0, 'Green' : 0, 'Colorless' : 0}
     
@@ -82,7 +119,7 @@ class Player:
         self.hand.append(drawn_card)
         return drawn_card
     def play_card(self, index, game):
-        assert index in self.get_playable_cards()
+        assert index in self.get_playable_cards(game)
         card = self.hand.pop(index)
         self.generic_debt = self.subtract_color_mana(card.mc)
         card.play(self, game)
@@ -108,7 +145,7 @@ class Player:
         eligible_blockers = []
         for permanent in game.battlefield:
             if permanent.owner.index is self.index:
-                if isinstance(permanent, Creature) and not permanent.is_tapped:
+                if isinstance(permanent, Creature) and not permanent.is_tapped and not permanent.cannot_block:
                     eligible_blockers.append(permanent)                    
         return eligible_blockers
     def get_nonempty_mana_colors(self):

@@ -4,6 +4,7 @@ import numpy as np
 from players import *
 from itertools import chain, combinations
 import copy
+import itertools
 
 class Game:
     def __init__(self, player0, player1):
@@ -15,6 +16,8 @@ class Game:
         self.blockers = []
         self.battlefield = []
         self.stack_is_empty = True
+        self.temporary_zone = []
+        self.damage_targets = []
         #self.player_just_moved = {}
         self.phases = ["Main Phase", "Declare Attackers Step", "Declare Blockers Step", "509.2", "510.1c",
                        "Combat Damage Step", "Main Phase", "End Step"]
@@ -23,12 +26,16 @@ class Game:
         self.attacker_counter = 0
         self.blocker_counter = 0
         
+
+    def update_damage_targets(self):
+        self.damage_targets = []
+        self.damage_targets = self.get_battlefield_creatures() + self.players
+        
     def get_moves(self):
         player = self.player_with_priority
         return self.get_legal_moves(player)
     
     def get_results(self, player_index):
-        #print("current player index: %i" % (player.index))
         player = self.players[player_index]
         opponent = self.players[1-player.index]
         assert self.is_over()
@@ -44,6 +51,47 @@ class Game:
         player = self.player_with_priority
         self.player_just_moved = player
         # TODO make the players pay up the generic mana cost debt if they have some!
+        if player.casting_spell != "":
+            #print("player should cast spell: %s " % (player.casting_spell))
+            #print(move)
+            if player.casting_spell == "Vengeance":
+                dead_creature = self.battlefield[move]
+                self.battlefield.remove(dead_creature)
+                dead_creature.owner.graveyard.append(dead_creature)
+            if player.casting_spell == "Stone Rain":
+                destroyed_land = self.battlefield[move]
+                self.battlefield.remove(destroyed_land)
+                destroyed_land.owner.graveyard.append(destroyed_land)
+            if player.casting_spell == "Index":
+                for i in range(len(move)):
+                    indexed_card = player.deck.pop()
+                    indexed_card.deck_location_known = True
+                    self.temporary_zone.append(indexed_card)
+                # TODO: Consider if the logic behind declaring blockers, declaring attackers and assigning combat damage
+                #       can be simplified in a similar manner by allowing moves to be a list of lists
+                for index in move:
+                    player.deck.append(self.temporary_zone[index])
+                self.temporary_zone = []
+            if player.casting_spell == "Lava Axe":
+                self.players[move].life -= 5
+            if player.casting_spell == "Rampant Growth":
+                if not move == "Refuse":
+                    land_index = player.find_land_in_library(move)
+                    land = player.deck.pop(land_index)
+                    self.battlefield.append(land)
+                    land.is_tapped = False
+                    land.owner = player
+                player.shuffle_deck()
+            if player.casting_spell == "Volcanic Hammer":
+                self.update_damage_targets()
+                self.damage_targets[move].take_damage(3)
+            player.casting_spell = ""
+            return True
+        
+        # temp debugging:
+        assert isinstance(move, int)
+        
+        # XXX: Rename -1 to "pass" in all files
         if move is -1:
             player.passed_priority = True
             self.player_with_priority = self.active_player.get_opponent(self)
@@ -51,7 +99,7 @@ class Game:
                 self.go_to_next_phase()
             return True
         if self.phases[self.current_phase_index] == "Main Phase":
-            playable_indices = player.get_playable_cards()
+            playable_indices = player.get_playable_cards(self)
             callable_permanents, ability_indices = player.get_activated_abilities(self)
             number_of_legal_moves = len(playable_indices) + sum(ability_indices)        
             if move < len(playable_indices):
@@ -73,6 +121,8 @@ class Game:
             element = powerset[move]
             chosen_attackers = [eligible_attackers[i] for i in element]
             self.attackers = chosen_attackers
+            for attacker in self.attackers:
+                attacker.is_tapped = True
         if self.phases[self.current_phase_index] == "Declare Blockers Step":
             blocking_player = self.nonactive_player
             blocking_player.has_blocked = True
@@ -111,12 +161,59 @@ class Game:
         remaining_health = blocker_i.toughness - blocker_i.damage_taken
         attacker.assign_damage(index, amount)
         return attacker.damage_to_assign > 0
+    
+    # NOTE: this function might be too specialized when more spells than 8ed have been added
+    
+    def get_tapped_creature_indices(self):
+        tapped_creature_indices = []
+        for i in range(len(self.battlefield)):
+            if isinstance(self.battlefield[i], Creature):
+                if self.battlefield[i].is_tapped:
+                    tapped_creature_indices.append(i)
+        return tapped_creature_indices
+    
+    def get_land_indices(self):
+        land_indices = []
+        for i in range(len(self.battlefield)):
+            if isinstance(self.battlefield[i], Land):
+                land_indices.append(i)
+        return land_indices
 
+   
+    def get_battlefield_creatures(self):
+        creatures = []
+        for i in range(len(self.battlefield)):
+            if isinstance(self.battlefield[i], Creature):
+                creatures.append(self.battlefield[i])
+        return creatures
+
+    # NOTE: this function might have become too crowded, consider refactoring
     def get_legal_moves(self, player):
         if self.is_over():
             return []
+        if player.casting_spell != "":
+            #print("Returning a spell move now")
+            if player.casting_spell == "Vengeance":
+                return self.get_tapped_creature_indices()
+            if player.casting_spell == "Stone Rain":
+                return self.get_land_indices()
+            if player.casting_spell == "Index":
+                return list(itertools.permutations(list(range(min(5, len(player.deck))))))
+            if player.casting_spell == "Lava Axe":
+                return [0, 1]
+            if player.casting_spell == "Volcanic Hammer":
+                self.update_damage_targets()
+                return list(range(len(self.damage_targets)))
+            if player.casting_spell == "Rampant Growth":
+                choices = ["Refuse"]
+                basic_land_types = ["Plains", "Island", "Swamp", "Mountain", "Forest"]
+                for land_type in basic_land_types:
+                    if player.find_land_in_library(land_type) >= 0:
+                        choices.append(land_type)
+                return choices
+            return [-1]
         if self.phases[self.current_phase_index] == "Main Phase":
-            playable_indices = player.get_playable_cards()
+            playable_indices = player.get_playable_cards(self)
             _, ability_indices = player.get_activated_abilities(self)
             non_passing_moves = list(range(len(playable_indices) + sum(ability_indices)))
             non_passing_moves.append(-1)
@@ -149,7 +246,6 @@ class Game:
             return [-1]
         if self.phases[self.current_phase_index] == "End Step":  
             return [-1]
-
             
     def get_possible_damage_assignments(self, player, attacker, index):
         if  len(attacker.damage_assignment_order) is 0:
@@ -171,7 +267,7 @@ class Game:
         self.active_player.passed_priority = False
         self.active_player.can_play_land = True
         for i in range(len(self.players)):
-            #self.players[i].shuffle_deck()
+            self.players[i].shuffle_deck()
             for j in range(self.starting_hand_size):
                 self.players[i].draw_card()     
     def start_new_turn(self):
@@ -201,9 +297,6 @@ class Game:
         if self.phases[self.current_phase_index] == "Combat Damage Step" :
             if self.apply_combat_damage():
                 self.check_state_based_actions()
-                if self.is_over():
-                    if self.players[0].has_lost: self.players[1].wins += 1
-                    else:               self.players[0].wins += 1
             self.clean_up_after_combat()
         if self.phases[self.current_phase_index] == "Declare Blockers Step":
             self.nonactive_player.has_passed = False

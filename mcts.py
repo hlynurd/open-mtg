@@ -56,16 +56,39 @@ def uct(rootstate, itermax, verbose = False):
     for i in range(itermax):
         node = rootnode
         state = copy.deepcopy(rootstate)
+        
+
         # mtg fix: shuffle own deck
-        state.players[node.player_just_moved.index].shuffle_deck()
+        k = node.player_just_moved.index
+        
+        # the mcts rollouts don't randomize cards that have been seen with Index
+        indexed_cards_in_deck = []
+        #print("mcts print: %s" % (state.players))
+        
+        if len(state.players[k].deck) > 0:
+            try: 
+                while len(state.players[k].deck)>0 and state.players[k].deck[-1].deck_location_known:
+                    indexed_cards_in_deck.append(state.players[k].deck.pop())
+            except:
+                print(state.players[k])
+                print(state.players[k].deck)
+                assert False
+        for indexed_card in indexed_cards_in_deck:
+            state.players[k].deck.append(indexed_card)
         # and "imagine" a scenario for the opponent - this assumes knowledge of opponent decklist!
-        opponent = state.players[1-node.player_just_moved.index]
+        
+        state.players[k].shuffle_deck()
+        opponent = state.players[1-k]
+
         opponent_hand_size = len(opponent.hand)
         for j in range(opponent_hand_size):
             opponent.deck.append(opponent.hand.pop())
+
         opponent.shuffle_deck()
+
         for j in range(opponent_hand_size):
             opponent.draw_card()
+       
             
         #state = rootstate.Clone()
 
@@ -75,7 +98,7 @@ def uct(rootstate, itermax, verbose = False):
             state.make_move(node.move)
 
         # Expand
-        if node.untried_moves != []: # if we can expand (i.e. state/node is non-terminal)
+        if node.untried_moves != [] and node.parent == None: # if we can expand (i.e. state/node is root)
             m = random.choice(node.untried_moves) 
             state.make_move(m)
             node = node.add_child(m,state) # add child and descend tree

@@ -13,9 +13,30 @@ def get_bear_wars_deck():
                                                                              lambda self: self.owner.add_mana({"Red": 1})]))
     return decklist
 
+def get_8ed_core_gold_deck():
+    decklist = []
+    for i in range(8): #(8):
+        decklist.append(Land    ("Mountain", "Basic Land", "Mountain", [lambda self: self.owner.add_mana({"Red": 1})]))
+    for i in range(7): #(7):
+        decklist.append(Land    ("Forest", "Basic Land", "Island", [lambda self: self.owner.add_mana({"Green": 1})]))
+    for i in range(2):
+        decklist.append(Creature("Norwood Ranger", "Elf Scout", {'Green': 1}, 1, 2))
+        decklist.append(Sorcery("Lava Axe", "", {'Red': 1, 'Generic' : 4}))
+        decklist.append(Creature("Grizzly Bears", "Bear", {'Green': 1, 'Generic': 1}, 2, 2))
+        decklist.append(Creature("Enormous Baloth", "Beast", {'Green': 1, 'Generic': 6}, 7, 7))
+        decklist.append(Creature("Goblin Raider", "Goblin Warrior", {'Red': 1, 'Generic': 1}, 2, 2, True))
+        decklist.append(Creature("Hill Giant", "Giant", {'Red': 1, 'Generic': 3}, 3, 3))        
+        decklist.append(Sorcery("Volcanic Hammer", "", {'Red': 1, 'Generic' : 1}))
+    for i in range(1):
+        decklist.append(Creature("Spined Wurm", "Wurm", {'Green': 1, 'Generic': 4}, 4, 3))
+        decklist.append(Creature("Ogre Taskmaster", "Ogre", {'Red': 1, 'Generic': 3}, 4, 3, True))
+        decklist.append(Sorcery("Stone Rain", "", {'Red': 1, 'Generic' : 2}))
+        decklist.append(Sorcery("Rampant Growth", "", {'Green': 1, 'Generic' : 1}))
+    return decklist
+        
+
 def get_8ed_core_silver_deck():
     decklist = []
-    # TODO: add sorceries
     for i in range(8):
         decklist.append(Land    ("Plains", "Basic Land", "Plains", [lambda self: self.owner.add_mana({"White": 1})]))
     for i in range(7):
@@ -27,7 +48,10 @@ def get_8ed_core_silver_deck():
     for i in range(2):
         decklist.append(Creature("Coral Eel", "Eel", {'Blue': 1, 'Generic' : 1}, 2, 1))
         decklist.append(Creature("Vizzerdrix", "Beast", {'Blue': 1, 'Generic' : 7}, 6, 6))
+        #decklist.append(Sorcery("Sacred Nectar", "", {'White': 1, 'Generic' : 1}))
+        #decklist.append(Sorcery("Vengeance", "", {'White': 1, 'Generic' : 1}))
     for i in range(1):
         decklist.append(Creature("Eager Cadet", "Human Soldier", {'White': 1, 'Generic' : 0}, 1, 1))
         decklist.append(Creature("Fugitive Wizard", "Human Wizard", {'Blue': 1, 'Generic' : 0}, 1, 1))
+        #decklist.append(Sorcery("Index", "", {'Blue': 1, 'Generic' : 0}))
     return decklist

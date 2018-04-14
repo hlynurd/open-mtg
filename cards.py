@@ -3,27 +3,44 @@ class Card:
     def __init__(self):
         self.mc = {'White' : 0, 'Blue' : 0, 'Black' : 0, 'Red' : 0, 'Green' : 0, 'Colorless' : 0, 'Generic' : 0}
         self.tapped_abilities = []
+        self.deck_location_known = False
     def play(self, owner, game):
         self.owner = owner
         self.is_tapped = False
-        game.battlefield.append(self)
+        
         
 class Land(Card):
     def __init__(self, name, types, subtypes, tapped_abilities ):
         super(Land, self).__init__()
+        self.name             = name
         self.types            = types
         self.subtypes         = subtypes
         self.tapped_abilities = tapped_abilities        
     def play(self, owner, game):
         super(Land, self).play(owner, game)
+        game.battlefield.append(self)
         self.owner.can_play_land = False
-    def use_tapped_ability(self, index):
+    def use_tapped_ability(self, index):        
         if not self.is_tapped:
             self.is_tapped = True
             self.tapped_abilities[index](self)        
             
+class Sorcery(Card):
+    def __init__(self, name, types, subtypes):
+        super(Sorcery, self).__init__()
+        self.name             = name
+        self.types            = types
+        self.subtypes         = subtypes
+    def play(self, owner, game):
+        super(Sorcery, self).play(owner, game)        
+        # XXX: Handle this elsewhere!
+        if self.name == "Sacred Nectar":
+            owner.life += 4
+        else:
+            owner.casting_spell = self.name
+            
 class Creature(Card):
-    def __init__(self, name, subtypes, mc, power, toughness):
+    def __init__(self, name, subtypes, mc, power, toughness, cannot_block = False):
         super(Creature, self).__init__()
         self.name             = name
         self.mc               = {x: mc.get(x, 0) + self.mc.get(x, 0) for x in set(mc).union(self.mc)}
@@ -32,8 +49,11 @@ class Creature(Card):
         self.base_toughness   = toughness        
         self.toughness        = toughness
         self.subtypes         = subtypes        
+        # Consider adding a functional creature card instantiation argument that sets text automatically
+        self.cannot_block        = False
     def play(self, owner, game):
         super(Creature, self).play(owner, game)
+        game.battlefield.append(self)
         self.summoning_sick   = True
         self.is_dead          = False
         self.damage_taken     = 0
@@ -55,16 +75,11 @@ class Creature(Card):
         try:
             self.damage_assignment_order = list(all_permutations[order]) 
         except: 
-            print("error 2")
             assert False
         try: 
             self.damage_to_assign = self.power
             self.damage_assignment = [0] * len(self.damage_assignment_order)
         except:
-            print("error trying to assign damage! printing stuff:")
-            print(self.owner)
-            print(self.owner.index)
-            
             assert False
     def assign_damage(self, index, amount):
         self.damage_assignment[index] += amount
