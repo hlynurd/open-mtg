@@ -1,24 +1,17 @@
-
 # coding: utf-8
 
 # In[1]:
 
-import numpy as np
-import random
 import mcts
-from cards import *
-from players import *
-from game import *    
-from random_policy import *
 from decklists import *
-
+from game import *
 
 # In[2]:
 
 # todo: handle generic mana debt
 # todo: implement 7th or 8th ed starter 2 player decks
 # todo: clean up and sexify code
-#%%capture
+# %%capture
 player_0_wins = 0
 player_1_wins = 0
 for i in range(20):
@@ -28,12 +21,12 @@ for i in range(20):
         if game.player_with_priority.index is 0:
             move = game.player_with_priority.determine_move(method="random", game=game)
         else:
-#            move = game.player_with_priority.determine_move(method="random", game=game)
+            #            move = game.player_with_priority.determine_move(method="random", game=game)
             if len(game.get_moves()) == 1:
                 move = game.get_moves()[0]
             else:
-                move = mcts.uct(game, itermax = 30)
-        game.make_move(move)    
+                move = mcts.uct(game, itermax=40)
+        game.make_move(move)
     if game.players[1].has_lost:
         player_0_wins += 1
     elif game.players[0].has_lost:
