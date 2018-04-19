@@ -21,6 +21,10 @@ An experimental framework for writing, testing and evaluating agents for the car
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
 
+## Contributing
+
+I have a keen in branching out this project, please send me and email so we can coordinate our collaboration efforts!
+
 ## Usage
 
 A game is initialized with two players, which are initialized with a python decklist of cards:
