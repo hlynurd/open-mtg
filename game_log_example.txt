@@ -1,0 +1,195 @@
+Print example from notebook:
+
+Gold player's turn
+    playing Forest
+  current phase is: End Step
+    gold player's permanents: [Forest]
+
+Silver player's turn 
+    playing Island
+  current phase is: End Step
+    silver player's permanents: [Island]
+
+Gold player's turn 
+    playing Forest
+    casting Norwood Ranger
+  current phase is: End Step
+    gold player's permanents: [Forest, Forest, Norwood Ranger]
+
+Silver player's turn 
+    playing Plains
+  current phase is: End Step
+    silver player's permanents: [Island, Plains]
+
+Gold player's turn 
+    playing Mountain
+  current phase is: End Step
+    gold player's permanents: [Forest, Forest, Norwood Ranger, Mountain]
+
+Silver player's turn 
+    playing Island
+    casting Glory Seeker
+  current phase is: End Step
+    silver player's permanents: [Island, Plains, Island, Glory Seeker]
+
+Gold player's turn 
+  current phase is: 510.1c
+    attacking creatures [Norwood Ranger]: 
+    blocking creatures [Glory Seeker]: 
+      Gold player's life: 20, Silver player's life: 20
+    casting Goblin Raider
+  current phase is: End Step
+    gold player's permanents: [Forest, Forest, Mountain, Goblin Raider]
+
+Silver player's turn 
+  current phase is: 510.1c
+    attacking creatures [Glory Seeker]: 
+      Gold player's life: 18, Silver player's life: 20
+    playing Plains
+    casting Giant Octopus
+  current phase is: End Step
+    silver player's permanents: [Island, Plains, Island, Glory Seeker, Plains, Giant Octopus]
+
+Gold player's turn 
+    casting Volcanic Hammer
+  current phase is: End Step
+    gold player's permanents: [Forest, Forest, Mountain, Goblin Raider]
+
+Silver player's turn 
+    playing Island
+  current phase is: End Step
+    silver player's permanents: [Island, Plains, Island, Plains, Giant Octopus, Island]
+
+Gold player's turn 
+    playing Forest
+    casting Stone Rain
+  current phase is: End Step
+    gold player's permanents: [Forest, Forest, Mountain, Goblin Raider, Forest]
+
+Silver player's turn 
+    playing Island
+    casting Glory Seeker
+  current phase is: 510.1c
+    attacking creatures [Giant Octopus]: 
+      Gold player's life: 15, Silver player's life: 20
+  current phase is: End Step
+    silver player's permanents: [Plains, Island, Plains, Giant Octopus, Island, Island, Glory Seeker]
+
+Gold player's turn 
+  current phase is: 510.1c
+    attacking creatures [Goblin Raider]: 
+    blocking creatures [Giant Octopus]: 
+      Gold player's life: 15, Silver player's life: 20
+  current phase is: End Step
+    gold player's permanents: [Forest, Forest, Mountain, Forest]
+
+Silver player's turn 
+    playing Island
+  current phase is: 510.1c
+    attacking creatures [Giant Octopus, Glory Seeker]: 
+      Gold player's life: 10, Silver player's life: 20
+  current phase is: End Step
+    silver player's permanents: [Plains, Island, Plains, Giant Octopus, Island, Island, Glory Seeker, Island]
+
+Gold player's turn 
+    casting Grizzly Bears
+    playing Mountain
+    casting Grizzly Bears
+  current phase is: End Step
+    gold player's permanents: [Forest, Forest, Mountain, Forest, Grizzly Bears, Mountain, Grizzly Bears]
+
+Silver player's turn 
+    playing Plains
+  current phase is: End Step
+    silver player's permanents: [Plains, Island, Plains, Giant Octopus, Island, Island, Glory Seeker, Island, Plains]
+
+Gold player's turn 
+    playing Mountain
+    casting Ogre Taskmaster
+  current phase is: 510.1c
+    attacking creatures [Grizzly Bears]: 
+    blocking creatures [Giant Octopus, Glory Seeker]: 
+      Gold player's life: 10, Silver player's life: 20
+  current phase is: End Step
+    gold player's permanents: [Forest, Forest, Mountain, Forest, Mountain, Grizzly Bears, Mountain, Ogre Taskmaster]
+
+Silver player's turn 
+    playing Plains
+    casting Glory Seeker
+    casting Giant Octopus
+  current phase is: End Step
+    silver player's permanents: [Plains, Island, Plains, Island, Island, Glory Seeker, Island, Plains, Plains, Glory Seeker, Giant Octopus]
+
+Gold player's turn 
+    casting Lava Axe
+  current phase is: 510.1c
+    attacking creatures [Ogre Taskmaster]: 
+    blocking creatures [Glory Seeker]: 
+      Gold player's life: 5, Silver player's life: 20
+  current phase is: End Step
+    gold player's permanents: [Forest, Forest, Mountain, Forest, Mountain, Grizzly Bears, Mountain, Ogre Taskmaster]
+
+Silver player's turn 
+    playing Island
+  current phase is: 510.1c
+    attacking creatures [Glory Seeker, Giant Octopus]: 
+    blocking creatures [Grizzly Bears]: 
+      Gold player's life: 3, Silver player's life: 20
+  current phase is: End Step
+    silver player's permanents: [Plains, Island, Plains, Island, Island, Island, Plains, Plains, Glory Seeker, Giant Octopus, Island]
+
+Gold player's turn 
+    playing Mountain
+    casting Enormous Baloth
+  current phase is: 510.1c
+    attacking creatures [Grizzly Bears, Ogre Taskmaster]: 
+    blocking creatures [Giant Octopus]: 
+      Gold player's life: 3, Silver player's life: 16
+  current phase is: End Step
+    gold player's permanents: [Forest, Forest, Mountain, Forest, Mountain, Mountain, Ogre Taskmaster, Mountain, Enormous Baloth]
+
+Silver player's turn 
+    playing Plains
+    casting Vizzerdrix
+  current phase is: 510.1c
+    attacking creatures [Glory Seeker]: 
+      Gold player's life: 1, Silver player's life: 16
+  current phase is: End Step
+    silver player's permanents: [Plains, Island, Plains, Island, Island, Island, Plains, Plains, Glory Seeker, Island, Plains, Vizzerdrix]
+
+Gold player's turn 
+  current phase is: 510.1c
+    attacking creatures [Ogre Taskmaster]: 
+    blocking creatures [Glory Seeker]: 
+      Gold player's life: 1, Silver player's life: 16
+    casting Lava Axe
+    playing Mountain
+  current phase is: End Step
+    gold player's permanents: [Forest, Forest, Mountain, Forest, Mountain, Mountain, Mountain, Enormous Baloth, Mountain]
+
+Silver player's turn 
+  current phase is: 510.1c
+    attacking creatures [Vizzerdrix]: 
+    blocking creatures [Enormous Baloth]: 
+      Gold player's life: 1, Silver player's life: 11
+  current phase is: End Step
+    silver player's permanents: [Plains, Island, Plains, Island, Island, Island, Plains, Plains, Island, Plains]
+
+Gold player's turn 
+    playing Forest
+  current phase is: 510.1c
+    attacking creatures [Enormous Baloth]: 
+      Gold player's life: 1, Silver player's life: 4
+  current phase is: End Step
+    gold player's permanents: [Forest, Forest, Mountain, Forest, Mountain, Mountain, Mountain, Enormous Baloth, Mountain, Forest]
+
+Silver player's turn 
+    playing Plains
+  current phase is: End Step
+    silver player's permanents: [Plains, Island, Plains, Island, Island, Island, Plains, Plains, Island, Plains, Plains]
+
+Gold player's turn 
+    casting Volcanic Hammer
+  current phase is: 510.1c
+    attacking creatures [Enormous Baloth]: 
+      Gold player's life: 1, Silver player's life: -6
