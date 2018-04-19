@@ -9,9 +9,11 @@ class Card:
         self.owner = None
         self.is_tapped = False
 
-    def play(self, owner, game):
+    def play(self, owner, game, verbose=False):
         self.owner = owner
-
+        
+    def __repr__(self):
+        return self.name
 
 class Land(Card):
     def __init__(self, name, types, subtypes, tapped_abilities):
@@ -21,8 +23,11 @@ class Land(Card):
         self.subtypes = subtypes
         self.tapped_abilities = tapped_abilities
 
-    def play(self, owner, game):
-        super(Land, self).play(owner, game)
+    def play(self, owner, game, verbose=False):
+        super(Land, self).play(owner, game, verbose)
+        if verbose:
+            print("    playing %s" % (self.name))
+
         game.battlefield.append(self)
         self.owner.can_play_land = False
 
@@ -31,17 +36,28 @@ class Land(Card):
             self.is_tapped = True
             self.tapped_abilities[index](self)
 
+    def __str__(self):
+        return self.name
+
 
 class Sorcery(Card):
-    def __init__(self, name, types, subtypes):
+    def __init__(self, name, subtypes, mc):
         super(Sorcery, self).__init__()
         self.name = name
-        self.types = types
+        self.mc = {x: mc.get(x, 0) + self.mc.get(x, 0) for x in set(mc).union(self.mc)}
         self.subtypes = subtypes
 
-    def play(self, owner, game):
+    def play(self, owner, game, verbose=False):
         super(Sorcery, self).play(owner, game)
+        if verbose:
+            print("    casting %s" % (self.name))
         owner.casting_spell = self.name
+        
+    def __repr__(self):
+        return self.name
+        
+    def __str__(self):
+        return self.name
 
 
 class Creature(Card):
@@ -66,8 +82,10 @@ class Creature(Card):
         # Consider adding a functional creature card instantiation argument that sets text automatically
         self.cannot_block = cannot_block
 
-    def play(self, owner, game):
+    def play(self, owner, game, verbose=False):
         super(Creature, self).play(owner, game)
+        if verbose:
+            print("    casting %s" % (self.name))
         game.battlefield.append(self)
 
     def take_damage(self, amount):
@@ -87,3 +105,9 @@ class Creature(Card):
     def assign_damage(self, index, amount):
         self.damage_assignment[index] += amount
         self.damage_to_assign -= amount
+        
+    def __repr__(self):
+        return self.name
+
+    def __str__(self):
+        return self.name

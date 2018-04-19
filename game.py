@@ -49,7 +49,6 @@ class Game:
     def make_move(self, move, verbose=False):
         player = self.player_with_priority
         self.player_just_moved = player
-        # TODO make the players pay up the generic mana cost debt if they have some!
         if player.generic_debt > 0:
             for mana in move:
                 player.mp[mana] -= 1
@@ -102,7 +101,7 @@ class Game:
             playable_indices = player.get_playable_cards(self)
             callable_permanents, ability_indices = player.get_activated_abilities(self)
             if move < len(playable_indices):
-                player.play_card(playable_indices[move], self)
+                player.play_card(playable_indices[move], self, verbose)
             else:
                 move -= len(playable_indices)
                 for i in range(len(ability_indices)):

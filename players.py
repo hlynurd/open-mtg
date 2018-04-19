@@ -59,11 +59,10 @@ class Player:
 
     def can_afford_card(self, card):
         for key in self.mp:
-            if key != 'Generic':
-                if self.mp[key] - card.mc[key] < 0:
-                    return False
-                elif sum(self.mp.values()) < sum(card.mc.values()):
-                    return False
+            if self.mp[key] - card.mc[key] < 0:
+                return False
+            elif sum(self.mp.values()) < sum(card.mc.values()):
+                return False
         return True
 
     def has_legal_targets(self, card, game):
@@ -130,11 +129,11 @@ class Player:
         self.hand.append(drawn_card)
         return drawn_card
 
-    def play_card(self, index, game):
+    def play_card(self, index, game, verbose):
         assert index in self.get_playable_cards(game)
         card = self.hand.pop(index)
         self.generic_debt = self.subtract_color_mana(card.mc)
-        card.play(self, game)
+        card.play(self, game, verbose)
         return card
 
     def get_activated_abilities(self, game):
