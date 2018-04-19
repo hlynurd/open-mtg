@@ -56,9 +56,26 @@ game.player_with_priority
 ```
 
 
-# Main phase
+### Main phase
 
 Game returns a list of performable actions by the player. This is a list of indexes of cards in hand that can be played: Lands if the player has not played a land yet, or spells if the player has mana in their mana pool to pay for it. The list also contains indexes of activatable abilities by permanents they control.
 
-# Declare Attackers Step
+### Declare Attackers Step
 
+All combinations of eligible attackers are computed and indexed. Game returns a list of indices, and the combination that correpsonds to this index is declared as attackers when the index is passed to make_move.
+
+### Declare Blockers Step
+
+This step is handled with the player taking decisions over several moves: Until each eligible blocker has been considered, the legal moves are the indices of the attackers or an additional index, corresponding to a "no block" choice.
+
+### 509.2 "Damage Assignment Ordering"
+
+This step is also handled in several moves: For each attacker, the player choose an index corresponding to an indexed list of permutations of blockers.
+
+### 510.1c "Damage Assignment
+
+Double loop of moves, until no more choices are necessary: For each creature, and for each blocker assigned to that creature (in the damage assignment order), the legal moves is the legal amount of damage to be assigned to that blocker by that creature.
+
+### Corollary choices
+
+For spells or abilities that require a target, the player must get an additional list of legal moves from the game to finish resolving that spell or ability. Paying for generic mana cost is also delayed, so the player must get a list of legal combinations to pay for generic mana and pay for it before passing priority. 
