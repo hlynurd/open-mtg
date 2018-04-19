@@ -23,7 +23,7 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 ## Contributing
 
-I have a keen in branching out this project, please send me and email so we can coordinate our collaboration efforts!
+I have a keen in branching out this project, please send me an email so we can coordinate our collaboration efforts!
 
 ## Usage
 
@@ -66,7 +66,7 @@ Game returns a list of performable actions by the player. This is a list of inde
 
 ### Declare Attackers Step
 
-All combinations of eligible attackers are computed and indexed. Game returns a list of indices, and the combination that correpsonds to this index is declared as attackers when the index is passed to make_move.
+All combinations of eligible attackers are computed and indexed. Game returns a list of indices, and the combination that corresponds to this index is declared as attackers when the index is passed to make_move.
 
 ### Declare Blockers Step
 
