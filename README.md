@@ -1,5 +1,5 @@
 # OpenMTG
-[OpenMTG logo](https://raw.githubusercontent.com/hlynurd/open-mtg/master/logo.png) 
+![OpenMTG logo](https://raw.githubusercontent.com/hlynurd/open-mtg/master/logo.png) 
 
 An experimental framework for writing, testing and evaluating agents for the card game Magic: The Gathering.
 
