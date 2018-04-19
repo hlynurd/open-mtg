@@ -47,7 +47,7 @@ while not game.is_over():
     game.make_move(move)
 ```
 
-The list of legal moves returned by game depend on the state of the game. An action to pass priority is returned as the string "Pass" or an empty list. The most important one is which phase or step it is, accessed by:
+The list of legal moves returned by game depend on the state of the game. Currently this project supports lands and sorcery speed actions. An action to pass priority is returned as the string "Pass" or an empty list. The most important one is which phase or step it is, accessed by:
 
 ```python
 game.phases[game.current_phase_index]
