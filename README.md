@@ -23,7 +23,7 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 ## Contributing
 
-I have a keen in branching out this project, please send me an email so we can coordinate our collaboration efforts!
+I have a keen interest in expanding this work, please send me an email so we can coordinate our collaboration efforts!
 
 ## Usage
 
