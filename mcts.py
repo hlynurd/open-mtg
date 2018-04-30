@@ -1,5 +1,7 @@
-from game import *
+# Licence is granted to freely use and distribute for any sensible/legal purpose so long as this comment
+# remains in any distributed code.
 
+from game import *
 
 class Node:
     """ A node in the game tree. Note wins is always from the viewpoint of playerJustMoved.
