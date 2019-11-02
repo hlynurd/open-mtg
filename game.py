@@ -1,9 +1,14 @@
-from itertools import chain, combinations
 import math
+import random
 import logging
-from phases import Phases
+import numpy as np
+import itertools
 
-from player import *
+from phases import Phases
+from cards import Card, Sorcery, Creature, Land
+
+
+# from player import Player
 
 
 class Game:
@@ -116,7 +121,7 @@ class Game:
             attacking_player.has_attacked = True
             eligible_attackers = attacking_player.get_eligible_attackers(self)
             xs = list(range(len(eligible_attackers)))
-            powerset = list(chain.from_iterable(combinations(xs, n) for n in range(len(xs) + 1)))
+            powerset = list(itertools.chain.from_iterable(itertools.combinations(xs, n) for n in range(len(xs) + 1)))
             element = powerset[move]
             chosen_attackers = [eligible_attackers[i] for i in element]
             self.attackers = chosen_attackers
@@ -238,7 +243,8 @@ class Game:
             # next two lines get the power set of attackers
             eligible_attackers = attacking_player.get_eligible_attackers(self)
             xs = list(range(len(eligible_attackers)))
-            return list(range(len(list(chain.from_iterable(combinations(xs, n) for n in range(len(xs) + 1))))))
+            return list(range(
+                len(list(itertools.chain.from_iterable(itertools.combinations(xs, n) for n in range(len(xs) + 1))))))
         if self.current_phase_index == Phases.DECLARE_BLOCKERS_STEP:
             blocking_player = self.nonactive_player
             if blocking_player.has_blocked or player is not blocking_player:

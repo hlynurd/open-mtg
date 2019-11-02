@@ -2,9 +2,9 @@ import copy
 import random
 import numpy as np
 import logging
-
 import minimax
-from cards import *
+
+from cards import Card, Land, Creature, Sorcery
 
 
 class Player:
