@@ -11,9 +11,10 @@ class Card:
 
     def play(self, owner, game, verbose=False):
         self.owner = owner
-        
+
     def __repr__(self):
         return self.name
+
 
 class Land(Card):
     def __init__(self, name, types, subtypes, tapped_abilities):
@@ -52,10 +53,10 @@ class Sorcery(Card):
         if verbose:
             print("    casting %s" % (self.name))
         owner.casting_spell = self.name
-        
+
     def __repr__(self):
         return self.name
-        
+
     def __str__(self):
         return self.name
 
@@ -105,7 +106,7 @@ class Creature(Card):
     def assign_damage(self, index, amount):
         self.damage_assignment[index] += amount
         self.damage_to_assign -= amount
-        
+
     def __repr__(self):
         return self.name
 

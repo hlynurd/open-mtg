@@ -18,7 +18,8 @@ def get_bear_wars_deck():
 def get_8ed_core_gold_deck():
     decklist = []
     for i in range(8):  # (8):
-        decklist.append(cards.Land("Mountain", "Basic Land", "Mountain", [lambda self: self.owner.add_mana({"Red": 1})]))
+        decklist.append(
+            cards.Land("Mountain", "Basic Land", "Mountain", [lambda self: self.owner.add_mana({"Red": 1})]))
     for i in range(7):  # (7):
         decklist.append(cards.Land("Forest", "Basic Land", "Island", [lambda self: self.owner.add_mana({"Green": 1})]))
     for i in range(2):
