@@ -141,7 +141,7 @@ class Game:
                     eligible_blockers[i].is_blocking.append(self.attackers[blocking_assignments[i]])
                     self.blockers.append(eligible_blockers[i])
         # for each attacker that’s become blocked, the active player announces the damage assignment order
-        if self.current_phase_index == Phases.DECLARE_ATTACKERS_STEP_509_2:
+        if self.current_phase_index == Phases.DECLARE_BLOCKERS_STEP_509_2:
             for i in range(len(self.attackers)):
                 if len(self.attackers[i].is_blocked_by) is not 0:
                     if len(self.attackers[i].damage_assignment_order) is 0:
@@ -249,7 +249,7 @@ class Game:
             eligible_blockers = blocking_player.get_eligible_blockers(self)
             return list(range(np.power(len(self.attackers) + 1, len(eligible_blockers))))
         # for each attacker that’s become blocked, the active player announces the damage assignment order
-        if self.current_phase_index == Phases.DECLARE_ATTACKERS_STEP_509_2:
+        if self.current_phase_index == Phases.DECLARE_BLOCKERS_STEP_509_2:
             for i in range(len(self.attackers)):
                 if len(self.attackers[i].is_blocked_by) is not 0:
                     if len(self.attackers[i].damage_assignment_order) is 0:
