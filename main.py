@@ -46,7 +46,7 @@ def start_games(amount_of_games):
     for i in range(amount_of_games):
         gold_deck = deck.get_8ed_core_gold_deck()
         silver_deck = deck.get_8ed_core_silver_deck()
-        current_game = game.Game(player.Player(gold_deck), player.Player(silver_deck))
+        current_game = game.Game([player.Player(gold_deck), player.Player(silver_deck)])
         current_game.start_game()
 
         if current_game.active_player.index == 0:

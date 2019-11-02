@@ -7,10 +7,11 @@ from player import *
 
 
 class Game:
-    def __init__(self, player0, player1):
-        self.players = [player0, player1]
-        player0.index = 0
-        player1.index = 1
+    def __init__(self, players):
+        self.players = players
+        for index, player in enumerate(self.players):
+            player.index = index
+
         self.starting_hand_size = 7
         self.attackers = []
         self.blockers = []
@@ -22,10 +23,6 @@ class Game:
         self.nonactive_player = self.players[1 - self.active_player.index]
         self.player_just_moved = self.active_player
         self.player_with_priority = self.active_player
-        # self.player_just_moved = {}
-        # self.phases = Phases
-        # self.phases = ["Main Phase", "Declare Attackers Step", "Declare Blockers Step", "509.2", "510.1c",
-        #               "Combat Damage Step", "Main Phase", "End Step"]
         self.current_phase_index = Phases.BEGINNING_PHASE
         # two counters to help keep track of damage assignment - per attacker - per blocker, respectively
         self.attacker_counter = 0
