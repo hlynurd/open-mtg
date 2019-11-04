@@ -1,13 +1,22 @@
-from itertools import chain, combinations
 import math
-from players import *
+import random
+import logging
+import numpy as np
+import itertools
+
+from phases import Phases
+from cards import Card, Sorcery, Creature, Land
+
+
+# from player import Player
 
 
 class Game:
-    def __init__(self, player0, player1):
-        self.players = [player0, player1]
-        player0.index = 0
-        player1.index = 1
+    def __init__(self, players):
+        self.players = players
+        for index, player in enumerate(self.players):
+            player.index = index
+
         self.starting_hand_size = 7
         self.attackers = []
         self.blockers = []
@@ -19,11 +28,8 @@ class Game:
         self.nonactive_player = self.players[1 - self.active_player.index]
         self.player_just_moved = self.active_player
         self.player_with_priority = self.active_player
-        # self.player_just_moved = {}
-        self.phases = ["Main Phase", "Declare Attackers Step", "Declare Blockers Step", "509.2", "510.1c",
-                       "Combat Damage Step", "Main Phase", "End Step"]
-        self.current_phase_index = 0
-        # two counters to help keep track of damage assignment - per attacker - per bocker, respectively
+        self.current_phase_index = Phases.BEGINNING_PHASE
+        # two counters to help keep track of damage assignment - per attacker - per blocker, respectively
         self.attacker_counter = 0
         self.blocker_counter = 0
 
@@ -51,7 +57,7 @@ class Game:
         self.player_just_moved = player
         if player.generic_debt > 0:
             for mana in move:
-                player.mp[mana] -= 1
+                player.manapool[mana] -= 1
                 player.generic_debt -= 1
             return True
         if player.casting_spell != "":
@@ -97,7 +103,7 @@ class Game:
             if self.players[0].passed_priority and self.players[1].passed_priority and self.stack_is_empty:
                 self.go_to_next_phase()
             return True
-        if self.phases[self.current_phase_index] == "Main Phase":
+        if self.current_phase_index == Phases.MAIN_PHASE_PRE_COMBAT:
             playable_indices = player.get_playable_cards(self)
             callable_permanents, ability_indices = player.get_activated_abilities(self)
             if move < len(playable_indices):
@@ -110,18 +116,18 @@ class Game:
                     else:
                         callable_permanents[i].use_tapped_ability(move - 1)
 
-        if self.phases[self.current_phase_index] == "Declare Attackers Step":
+        if self.current_phase_index == Phases.DECLARE_ATTACKERS_STEP:
             attacking_player = self.active_player
             attacking_player.has_attacked = True
             eligible_attackers = attacking_player.get_eligible_attackers(self)
             xs = list(range(len(eligible_attackers)))
-            powerset = list(chain.from_iterable(combinations(xs, n) for n in range(len(xs) + 1)))
+            powerset = list(itertools.chain.from_iterable(itertools.combinations(xs, n) for n in range(len(xs) + 1)))
             element = powerset[move]
             chosen_attackers = [eligible_attackers[i] for i in element]
             self.attackers = chosen_attackers
             for attacker in self.attackers:
                 attacker.is_tapped = True
-        if self.phases[self.current_phase_index] == "Declare Blockers Step":
+        if self.current_phase_index == Phases.DECLARE_BLOCKERS_STEP:
             blocking_player = self.nonactive_player
             blocking_player.has_blocked = True
             eligible_blockers = blocking_player.get_eligible_blockers(self)
@@ -137,7 +143,7 @@ class Game:
                     eligible_blockers[i].is_blocking.append(self.attackers[blocking_assignments[i]])
                     self.blockers.append(eligible_blockers[i])
         # for each attacker that’s become blocked, the active player announces the damage assignment order
-        if self.phases[self.current_phase_index] == "509.2":
+        if self.current_phase_index == Phases.DECLARE_BLOCKERS_STEP_509_2:
             for i in range(len(self.attackers)):
                 if len(self.attackers[i].is_blocked_by) is not 0:
                     if len(self.attackers[i].damage_assignment_order) is 0:
@@ -145,7 +151,7 @@ class Game:
                         return 1
             return -1
         # A blocked creature assigns its combat damage to the creatures blocking it
-        if self.phases[self.current_phase_index] == "510.1c":
+        if self.current_phase_index == Phases.COMBAT_DAMAGE_STEP_510_1c:
             self.assign_damage_deterministically(player,
                                                  self.attackers[self.attacker_counter], self.blocker_counter, move)
             self.blocker_counter += 1
@@ -190,7 +196,7 @@ class Game:
             mp_as_list = player.get_mp_as_list()
             return list(itertools.combinations(mp_as_list, player.generic_debt))
         if player.casting_spell != "":
-            # print("Returning a spell move now")
+            # logging.debug("Returning a spell move now")
             if player.casting_spell == "Vengeance":
                 return self.get_tapped_creature_indices()
             if player.casting_spell == "Stone Rain":
@@ -212,43 +218,67 @@ class Game:
                         choices.append(land_type)
                 return choices
             return ["Pass"]
-        if self.phases[self.current_phase_index] == "Main Phase":
+        if self.current_phase_index == Phases.BEGINNING_PHASE:
+            return ["Pass"]
+        if self.current_phase_index == Phases.UNTAP_STEP:
+            return ["Pass"]
+        if self.current_phase_index == Phases.UPKEEP_STEP:
+            return ["Pass"]
+        if self.current_phase_index == Phases.DRAW_STEP:
+            return ["Pass"]
+        if self.current_phase_index == Phases.MAIN_PHASE_PRE_COMBAT:
             playable_indices = player.get_playable_cards(self)
             _, ability_indices = player.get_activated_abilities(self)
             non_passing_moves = list(range(len(playable_indices) + sum(ability_indices)))
             non_passing_moves.append("Pass")
             return non_passing_moves  # append the 'pass' move action and return
-        if self.phases[self.current_phase_index] == "Declare Attackers Step":
+        if self.current_phase_index == Phases.COMBAT_PHASE:
+            return ["Pass"]
+        if self.current_phase_index == Phases.BEGINNING_OF_COMBAT_STEP:
+            return ["Pass"]
+        if self.current_phase_index == Phases.DECLARE_ATTACKERS_STEP:
             attacking_player = self.active_player
             if attacking_player.has_attacked or player is not attacking_player:
                 return ["Pass"]
             # next two lines get the power set of attackers
             eligible_attackers = attacking_player.get_eligible_attackers(self)
             xs = list(range(len(eligible_attackers)))
-            return list(range(len(list(chain.from_iterable(combinations(xs, n) for n in range(len(xs) + 1))))))
-        if self.phases[self.current_phase_index] == "Declare Blockers Step":
+            return list(range(
+                len(list(itertools.chain.from_iterable(itertools.combinations(xs, n) for n in range(len(xs) + 1))))))
+        if self.current_phase_index == Phases.DECLARE_BLOCKERS_STEP:
             blocking_player = self.nonactive_player
             if blocking_player.has_blocked or player is not blocking_player:
                 return ["Pass"]
             eligible_blockers = blocking_player.get_eligible_blockers(self)
             return list(range(np.power(len(self.attackers) + 1, len(eligible_blockers))))
         # for each attacker that’s become blocked, the active player announces the damage assignment order
-        if self.phases[self.current_phase_index] == "509.2":
+        if self.current_phase_index == Phases.DECLARE_BLOCKERS_STEP_509_2:
             for i in range(len(self.attackers)):
                 if len(self.attackers[i].is_blocked_by) is not 0:
                     if len(self.attackers[i].damage_assignment_order) is 0:
                         return list(range(math.factorial(len(self.attackers[i].is_blocked_by))))
             return ["Pass"]
 
-        if self.phases[self.current_phase_index] == "510.1c":
+        if self.current_phase_index == Phases.COMBAT_DAMAGE_STEP_510_1c:
             if len(self.attackers) is 0 or self.attacker_counter >= len(self.attackers):
                 return ["Pass"]
             return self.get_possible_damage_assignments(player, self.attackers[self.attacker_counter],
                                                         self.blocker_counter)
-        if self.phases[self.current_phase_index] == "Combat Damage Step":
+        if self.current_phase_index == Phases.COMBAT_DAMAGE_STEP:
             return ["Pass"]
-        if self.phases[self.current_phase_index] == "End Step":
+        if self.current_phase_index == Phases.END_OF_COMBAT_STEP:
             return ["Pass"]
+        if self.current_phase_index == Phases.MAIN_PHASE_POST_COMBAT:
+            return ["Pass"]
+        if self.current_phase_index == Phases.ENDING_PHASE:
+            return ["Pass"]
+        if self.current_phase_index == Phases.END_STEP:
+            return ["Pass"]
+        if self.current_phase_index == Phases.CLEANUP_STEP:
+            return ["Pass"]
+
+        logging.debug(self.current_phase_index)
+        logging.debug("omg we should not have ended up here")
 
     @staticmethod
     def get_possible_damage_assignments(player, attacker, index):
@@ -270,7 +300,7 @@ class Game:
                 self.players[i].draw_card()
 
     def start_new_turn(self):
-        self.current_phase_index = 0
+        self.current_phase_index = Phases.BEGINNING_PHASE
         self.active_player = self.players[1 - self.active_player.index]
         self.player_with_priority = self.active_player
         self.nonactive_player = self.players[1 - self.active_player.index]
@@ -287,16 +317,17 @@ class Game:
             self.players[i].has_blocked = False
 
     def go_to_next_phase(self):
-        self.current_phase_index += 1
+        # logging.debug(self.current_phase_index)
+        self.current_phase_index = self.current_phase_index.next()
 
-        if self.current_phase_index == len(self.phases):
+        if self.current_phase_index == Phases.CLEANUP_STEP:
             self.start_new_turn()
             return True
-        if self.phases[self.current_phase_index] == "Combat Damage Step":
+        elif self.current_phase_index == Phases.COMBAT_DAMAGE_STEP:
             if self.apply_combat_damage():
                 self.check_state_based_actions()
             self.clean_up_after_combat()
-        if self.phases[self.current_phase_index] == "Declare Blockers Step":
+        elif self.current_phase_index == Phases.DECLARE_BLOCKERS_STEP:
             self.nonactive_player.has_passed = False
             self.active_player.has_passed = True
             self.player_with_priority = self.nonactive_player

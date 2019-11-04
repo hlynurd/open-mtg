@@ -1,10 +1,10 @@
 import copy
-import random as random
-
+import random
 import numpy as np
-
+import logging
 import minimax
-from cards import *
+
+from cards import Card, Land, Creature, Sorcery
 
 
 class Player:
@@ -21,12 +21,12 @@ class Player:
         self.has_blocked = False
         self.passed_priority = True
         self.casting_spell = ""
-        self.mp = {'White': 0, 'Blue': 0, 'Black': 0, 'Red': 0, 'Green': 0, 'Colorless': 0}
+        self.manapool = {'White': 0, 'Blue': 0, 'Black': 0, 'Red': 0, 'Green': 0, 'Colorless': 0}
 
     def get_mp_as_list(self):
         mp_list = []
-        for key in self.mp:
-            for i in range(self.mp[key]):
+        for key in self.manapool:
+            for i in range(self.manapool[key]):
                 mp_list.append(key)
         return mp_list
 
@@ -58,10 +58,10 @@ class Player:
             return legal_moves[arg]
 
     def can_afford_card(self, card):
-        for key in self.mp:
-            if self.mp[key] - card.mc[key] < 0:
+        for key in self.manapool:
+            if self.manapool[key] - card.mc[key] < 0:
                 return False
-            elif sum(self.mp.values()) < sum(card.mc.values()):
+            elif sum(self.manapool.values()) < sum(card.mc.values()):
                 return False
         return True
 
@@ -78,7 +78,7 @@ class Player:
     def get_playable_cards(self, game):
         playable_indices = []
         for i, card in enumerate(self.hand):
-            # print(card.name)
+            # logging.debug(card.name)
 
             if isinstance(card, Land):
                 if self.can_play_land:
@@ -108,14 +108,14 @@ class Player:
         return land_indices
 
     def reset_mp(self):
-        self.mp = {'White': 0, 'Blue': 0, 'Black': 0, 'Red': 0, 'Green': 0, 'Colorless': 0}
+        self.manapool = {'White': 0, 'Blue': 0, 'Black': 0, 'Red': 0, 'Green': 0, 'Colorless': 0}
 
     def add_mana(self, mana):
-        self.mp = {x: self.mp.get(x, 0) + mana.get(x, 0) for x in set(self.mp).union(mana)}
+        self.manapool = {x: self.manapool.get(x, 0) + mana.get(x, 0) for x in set(self.manapool).union(mana)}
 
     def subtract_color_mana(self, mana):
-        for key in self.mp:
-            self.mp[key] -= mana[key]
+        for key in self.manapool:
+            self.manapool[key] -= mana[key]
         return mana['Generic']
 
     def shuffle_deck(self):
@@ -165,13 +165,13 @@ class Player:
 
     def get_nonempty_mana_colors(self):
         mana_colors = []
-        for key in self.mp:
+        for key in self.manapool:
             if key is not 'Generic':
-                if self.mp[key] > 0:
+                if self.manapool[key] > 0:
                     mana_colors.append(key)
         return mana_colors
 
     def pay_generic_debt(self, color):
-        self.mp[color] -= 1
+        self.manapool[color] -= 1
         self.generic_debt -= 1
         return self.generic_debt
