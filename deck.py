@@ -21,7 +21,7 @@ def get_8ed_core_gold_deck():
         decklist.append(
             cards.Land("Mountain", "Basic Land", "Mountain", [lambda self: self.owner.add_mana({"Red": 1})]))
     for i in range(7):  # (7):
-        decklist.append(cards.Land("Forest", "Basic Land", "Island", [lambda self: self.owner.add_mana({"Green": 1})]))
+        decklist.append(cards.Land("Forest", "Basic Land", "Forest", [lambda self: self.owner.add_mana({"Green": 1})]))
     for i in range(2):
         decklist.append(cards.Creature("Norwood Ranger", "Elf Scout", {'Green': 1}, 1, 2))
         decklist.append(cards.Sorcery("Lava Axe", "", {'Red': 1, 'Generic': 4}))
